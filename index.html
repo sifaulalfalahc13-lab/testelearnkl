@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EL LEARN - Belajar Matematika</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#00d4ff">
+</head>
+<body>
+    <!-- Floating LED Orbs -->
+    <div class="led-orbs">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <h1 class="logo">EL LEARN</h1>
+            <div class="nav-right">
+                <button id="hamburger-menu" class="hamburger-btn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div id="user-profile" class="user-profile" style="display: none;">
+                    <span id="user-name" class="user-name"></span>
+                </div>
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+                    <span class="sun"></span>
+                    <span class="moon"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Side Dashboard Menu -->
+    <div id="side-dashboard" class="side-dashboard">
+        <div class="side-header">
+            <button id="close-menu" class="close-btn">×</button>
+            <h3>Dashboard</h3>
+        </div>
+        <div class="side-content">
+            <div class="profile-card">
+                <div class="avatar"></div>
+                <h4 id="side-user-name"></h4>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Total XP</span>
+                    <span id="side-xp" class="stat-value neon-led">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Stage Selesai</span>
+                    <span id="side-stages" class="stat-value neon-led">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Progres</span>
+                    <span id="side-progress" class="stat-value neon-led">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Jenjang</span>
+                    <span id="side-jenjang" class="stat-value neon-led">SD</span>
+                </div>
+            </div>
+            
+            <div class="side-actions">
+<button class="side-btn neon-btn" onclick="window.open('https://wa.me/628134200144', '_blank')" data-text="Customer Service" aria-label="Customer Service WhatsApp">
+                    💬 Customer Service
+                </button>
+<button class="side-btn instagram-btn" onclick="window.open('https://www.instagram.com/sfl.11_/', '_blank')" data-text="Instagram" aria-label="Instagram Profile">
+                    📱 Instagram
+                </button>
+                <button id="side-logout" class="side-btn logout-btn" data-text="Logout" aria-label="Logout">
+                    🚪 Logout
+                </button>
+                <button class="side-btn admin-btn" onclick="window.open('./admin.html', '_blank')" data-text="Admin Panel" aria-label="Admin Panel (Password Required)">
+                    🔐 Admin Panel
+                </button>
+            </div>
+            
+            <div class="side-footer">
+                <p>EL LEARN by Sifaul Alfalah | @sfl.11_</p>
+            </div>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <!-- Login Page -->
+        <div id="login-page" class="page active">
+            <div class="hero">
+                <div class="hero-content login-form">
+                    <h2 class="hero-title">Selamat Datang</h2>
+                    <p class="hero-subtitle">Masukkan nama Anda untuk memulai belajar matematika</p>
+                    <form id="login-form">
+                        <input type="text" id="username-input" class="login-input" placeholder="Nama Anda..." required minlength="2">
+                        <button type="submit" class="login-btn">Mulai Belajar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <h2>Halo, <span id="dashboard-user"></span>!</h2>
+                    <p class="dashboard-subtitle">Selamat datang kembali di EL LEARN. Mari tingkatkan skill matematika kamu hari ini!</p>
+                    <div id="daily-streak" class="daily-streak">
+                        <span id="streak-count">0</span> <span class="streak-label">Daily Streak 🔥</span>
+                    </div>
+                    <div id="level-info" class="level-info">
+                        <div class="level-item">
+                            <span class="level-label">Jenjang</span>
+                            <span id="jenjang-text" class="level-value">SD</span>
+                        </div>
+                        <div class="level-item">
+                            <span class="level-label">Kelas</span>
+                            <span id="kelas-text" class="level-value">1</span>
+                        </div>
+                        <div class="level-item">
+                            <span class="level-label">Stage</span>
+                            <span id="stage-text" class="level-value">1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Materi -->
+                <div id="materi-container" class="materi-container">
+                    <div class="materi-card">
+                        <h3 id="materi-judul">Loading...</h3>
+                        <div id="materi-isi" class="math-container"></div>
+                        <div id="materi-logika" class="materi-section math-container"></div>
+                        <div id="materi-hint" class="materi-section math-container"></div>
+                        <div id="materi-bingung" class="materi-section math-container"></div>
+                        <!-- Hint button moved to ujian.html -->
+                        <button id="paham-btn" class="paham-btn" onclick="window.location.href='ujian.html?stage=' + getCurrentStage()">Saya sudah paham, lanjut ujian</button>
+                    </div>
+                </div>
+
+                <!-- Progress & XP -->
+                <div class="progress-section">
+                    <div class="xp-container">
+                        <h3>XP <span id="xp-current">0</span></h3>
+                        <div class="xp-bar">
+                            <div id="xp-fill" class="xp-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <h3>Progress Belajar</h3>
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                        <span id="progress-text">0%</span>
+                    </div>
+                </div>
+
+                <!-- Stage Cards (Locked if not unlocked) -->
+                <div class="stages-grid">
+                    <div class="stage-card active" data-stage="1">
+                        <div class="stage-header">
+                            <h4>Stage 1</h4>
+                            <span class="stage-status active-led">Aktif</span>
+                        </div>
+                        <p>Pelajari materi lengkap di atas</p>
+                    </div>
+                    <div class="stage-card locked" data-stage="2">
+                        <div class="stage-header">
+                            <h4>Stage 2</h4>
+                            <span class="stage-status locked-led">Kunci</span>
+                        </div>
+                        <p>Selesaikan stage sebelumnya</p>
+                    </div>
+                    <div class="stage-card locked" data-stage="3">
+                        <div class="stage-header">
+                            <h4>Stage 3</h4>
+                            <span class="stage-status locked-led">Kunci</span>
+                        </div>
+                        <p>Selesaikan stage sebelumnya</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>EL LEARN by Sifaul Alfalah | @sfl.11_</p>
+    </footer>
+
+    <!-- KaTeX JS -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+

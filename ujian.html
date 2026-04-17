@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ujian - EL LEARN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+<style>
+        /* FIXED - Submit Button Clickable */
+        .quiz-main {
+            max-width: 900px; margin: 0 auto; padding: 2rem; z-index: 9999;
+        }
+        
+        /* Pembahasan Modal Styles */
+        .pembahasan-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10002;
+            display: flex; align-items: center; justify-content: center; padding: 2rem;
+        }
+        .pembahasan-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+        }
+        .pembahasan-content {
+            background: rgba(20,20,40,0.95); border: 2px solid var(--neon-blue);
+            border-radius: 25px; max-width: 90vw; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 0 60px var(--neon-blue); max-width: 1000px; width: 100%;
+        }
+        .pembahasan-header {
+            display: flex; justify-content: space-between; align-items: center; padding: 2rem;
+            border-bottom: 2px solid rgba(0,212,255,0.3); background: rgba(0,212,255,0.1);
+        }
+        .close-modal {
+            background: none; border: none; font-size: 2rem; color: var(--neon-gold); 
+            cursor: pointer; width: 40px; height: 40px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+        }
+        .close-modal:hover { background: rgba(255,215,0,0.2); }
+        .pembahasan-list {
+            padding: 2rem; max-height: 60vh; overflow-y: auto;
+        }
+        .soal-item {
+            background: rgba(255,255,255,0.05); margin-bottom: 2rem; padding: 2rem;
+            border-radius: 20px; border-left: 5px solid var(--neon-gold);
+        }
+        .soal-pertanyaan { font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--neon-gold); }
+        .soal-jawaban-user { color: #ff6b6b; font-weight: 500; }
+        .soal-jawaban-benar { color: #00ff88; font-weight: 600; }
+        .soal-pembahasan { margin-top: 1rem; padding: 1.5rem; background: rgba(0,255,136,0.1); border-radius: 15px; font-style: italic; }
+        .question-zone {
+            background: rgba(255,255,255,0.1); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            border-radius: 25px; 
+            padding: 3rem; 
+            z-index: 10000; 
+            position: relative;
+        }
+        .quiz-header { text-align: center; margin-bottom: 3rem; }
+        .quiz-stats { 
+            display: flex; gap: 3rem; justify-content: center; 
+            font-weight: 700; color: var(--neon-gold); font-size: 1.3rem; 
+            margin-top: 1rem;
+        }
+        .question-text { font-size: 1.7rem; margin-bottom: 2.5rem; line-height: 1.6; }
+        .quiz-options { 
+            display: grid; gap: 1.8rem; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            margin-bottom: 2.5rem;
+        }
+        .quiz-option {
+            padding: 2.2rem 2.8rem;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border: 3px solid rgba(0,212,255,0.5);
+            border-radius: 22px;
+            cursor: pointer !important;
+            transition: all 0.4s ease;
+            font-size: 1.2rem; font-weight: 600;
+            color: var(--text-main);
+            position: relative; overflow: hidden;
+            pointer-events: auto !important;
+            z-index: 100;
+        }
+        .quiz-option::before {
+            content: ''; position: absolute; top: 0; left: -120%;
+            width: 120%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.7s ease;
+        }
+        .quiz-option:hover::before { left: 120%; }
+        .quiz-option:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 45px var(--neon-blue);
+            transform: translateY(-6px) scale(1.02);
+        }
+        .quiz-option.selected {
+            border-color: var(--neon-gold);
+            background: rgba(255,215,0,0.15);
+            box-shadow: 0 0 35px var(--neon-gold);
+        }
+        .quiz-option.correct {
+            border-color: #00ff88 !important;
+            background: rgba(0,255,136,0.25) !important;
+            box-shadow: 0 0 50px #00ff88 !important;
+            animation: correctBounce 0.7s ease;
+        }
+        .quiz-option.wrong {
+            border-color: #ff4444 !important;
+            background: rgba(255,68,68,0.25) !important;
+            box-shadow: 0 0 35px #ff4444 !important;
+        }
+        @keyframes correctBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        
+        /* FIXED SUBMIT BUTTON - CLICKABLE 100% */
+        .kirim-lanjut {
+            width: 100%; padding: 2rem 3rem;
+            background: linear-gradient(45deg, var(--neon-green), var(--neon-blue));
+            color: white; border: none; border-radius: 28px;
+            font-size: 1.4rem; font-weight: 800;
+            cursor: pointer !important; pointer-events: auto !important;
+            transition: all 0.4s ease; z-index: 10001;
+            box-shadow: 0 10px 40px rgba(0,255,136,0.4);
+            position: relative; overflow: hidden;
+        }
+        .kirim-lanjut:hover:not(:disabled) {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 20px 60px rgba(0,255,136,0.6);
+        }
+        .kirim-lanjut:disabled {
+            opacity: 0.6; cursor: not-allowed; transform: none;
+        }
+        
+        /* Results */
+        .results-zone { text-align: center; padding: 4rem; }
+        .led-result {
+            width: 140px; height: 140px; border-radius: 50%;
+            margin: 2rem auto; box-shadow: 0 0 70px currentColor;
+            animation: ledPulse 2s infinite;
+        }
+        .led-success { background: linear-gradient(45deg, #00ff88, #32cd32); }
+        .led-fail { background: linear-gradient(45deg, #ff4444, #ff6961); }
+        @keyframes ledPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+        .action-grid { display: flex; gap: 2rem; justify-content: center; margin-top: 3rem; flex-wrap: wrap; }
+        .continue-btn, .retry-btn { padding: 1.5rem 3rem; min-width: 180px; }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">← EL LEARN</a>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="quiz-main">
+            <div class="quiz-header">
+                <h1 id="quiz-header-title">Loading Ujian...</h1>
+                <div class="quiz-stats">
+                    <span id="soal-counter">Soal <span id="current-soal-num">1</span> / <span id="total-soal-num">-</span></span>
+                    <span id="real-time-score">Benar: 0%</span>
+                </div>
+            </div>
+
+            <!-- ACTIVE QUIZ -->
+            <div id="quiz-active-zone" class="question-zone">
+                <div id="soal-text" class="question-text">Loading soal...</div>
+                <div id="pilihan-container" class="quiz-options"></div>
+                <button id="kirim-btn" class="kirim-lanjut" disabled>Pilih Jawaban Dulu</button>
+            </div>
+
+            <!-- RESULTS ZONE -->
+            <div id="quiz-result-zone" class="results-zone" style="display:none">
+                <div class="led-result" id="final-led"></div>
+                <h2 id="final-result-title">Menghitung...</h2>
+                <div id="skor-akhir" class="final-score">0/0 (0%)</div>
+                <div id="hasil-detail"></div>
+<div class="action-grid">
+                    <button id="kembali-btn" class="back-btn kirim-lanjut" onclick="history.back()">← Kembali</button>
+                    <button id="ulang-btn" class="retry-btn kirim-lanjut">Ulangi Ujian</button>
+                    <button id="lanjut-dashboard" class="continue-btn kirim-lanjut">lanjut stage</button>
+
+</xai:function_call)
+
+
+
+<xai:function_call name="edit_file">
+<parameter name="path">C:/Users/USER/Desktop/EL-LEARN/ujian.html
+                </div>
+                <!-- Pembahasan Modal -->
+                <div id="pembahasan-modal" class="pembahasan-modal" style="display:none;">
+                    <div class="pembahasan-overlay" onclick="tutupPembahasan()"></div>
+                    <div class="pembahasan-content">
+                        <div class="pembahasan-header">
+                            <h2>📚 Pembahasan Lengkap</h2>
+                            <button class="close-modal" onclick="tutupPembahasan()">×</button>
+                        </div>
+                        <div id="pembahasan-list" class="pembahasan-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /* =====================================================
+           EL LEARN QUIZ ENGINE - FIXED VERSION
+           Anti-duplikat, skor akurat, tombol clickable
+        ===================================================== */
+        
+        const MATERI_KEY = 'MATERI_EL_LEARN';
+        const STORAGE_KEY = {
+            PROGRESS: 'ellearn_progress',
+            XP: 'ellearn_xp',
+            SCORES: 'ellearn_scores'
+        };
+        
+        let kuisStatus = {
+            stageId: new URLSearchParams(window.location.search).get('stage') || 'sd-k1-s1',
+            soalArray: [],
+            jawabanUser: new Array(), // Store user answers
+            soalAktifIndex: 0,
+            totalSoal: 0
+        };
+        
+        // ================= INIT & LOAD =================
+        document.addEventListener('DOMContentLoaded', bootQuiz);
+        
+        async function bootQuiz() {
+            console.log('🔥 QUIZ BOOT - Stage ID:', kuisStatus.stageId);
+            
+            await loadMateriKuis();
+            bindQuizEvents();
+        }
+        
+        async function loadMateriKuis() {
+            const rawData = localStorage.getItem(MATERI_KEY);
+            if (!rawData) {
+                tampilkanErrorKuis('Data materi kosong. Tambah dari Admin Panel!');
+                return;
+            }
+            
+            try {
+                const dataParsed = JSON.parse(rawData);
+                const materiTarget = dataParsed.materi.find(m => m.id === kuisStatus.stageId);
+                
+                if (!materiTarget || !materiTarget.soal || materiTarget.soal.length === 0) {
+                    tampilkanErrorKuis('Soal tidak ditemukan untuk stage ini.');
+                    return;
+                }
+                
+                kuisStatus.soalArray = materiTarget.soal;
+                kuisStatus.totalSoal = kuisStatus.soalArray.length;
+                
+                // Update UI
+                document.title = `Ujian ${materiTarget.judul} - EL LEARN`;
+                document.getElementById('quiz-header-title').textContent = materiTarget.judul;
+                document.getElementById('total-soal-num').textContent = kuisStatus.totalSoal;
+                
+                console.log('✅ Soal berhasil dimuat:', kuisStatus.totalSoal);
+                tampilkanSoalSaatIni();
+                
+            } catch (err) {
+                console.error('Error parsing:', err);
+                tampilkanErrorKuis('Format data error: ' + err.message);
+            }
+        }
+        
+        // ================= DISPLAY SOAL =================
+        function tampilkanSoalSaatIni() {
+            console.log('📖 Render soal:', kuisStatus.soalAktifIndex + 1);
+            
+            // CRITICAL 1: CLEAR CONTAINER - ANTI DUPLIKAT!
+            const containerPilihan = document.getElementById('pilihan-container');
+            containerPilihan.innerHTML = ''; // HAPUS SEMUA OTOMATIS!
+            
+            const soalIni = kuisStatus.soalArray[kuisStatus.soalAktifIndex];
+            
+            // Question text
+            document.getElementById('soal-text').innerHTML = soalIni.pertanyaan;
+            
+            // Render EXACT pilihan - NO DUPLICATE!
+            soalIni.pilihan.forEach((teksPilihan, indexPilihan) => {
+                const tombol = document.createElement('button');
+                tombol.className = 'quiz-option';
+                tombol.dataset.index = indexPilihan;
+                tombol.innerHTML = `
+                    <span class="option-letter">${String.fromCharCode(65 + indexPilihan)}.</span> 
+                    ${teksPilihan}
+                `;
+                tombol.onclick = () => simpanPilihanUser(indexPilihan);
+                containerPilihan.appendChild(tombol);
+            });
+            
+            // Reset tombol submit
+            const btnKirim = document.getElementById('kirim-btn');
+            btnKirim.style.display = 'none';
+            btnKirim.disabled = true;
+            btnKirim.textContent = 'Pilih Jawaban Dulu';
+            
+            // Reset visual
+            document.querySelectorAll('.quiz-option').forEach(btn => {
+                btn.classList.remove('selected', 'correct', 'wrong');
+            });
+            
+            document.getElementById('current-soal-num').textContent = kuisStatus.soalAktifIndex + 1;
+            updateSkorHidup();
+        }
+        
+        // ================= USER PILIHAN =================
+        function simpanPilihanUser(indexDipilih) {
+            console.log('👆 User pilih:', indexDipilih);
+            
+            // Simpan jawaban
+            kuisStatus.jawabanUser[kuisStatus.soalAktifIndex] = indexDipilih;
+            
+            // Visual
+            document.querySelectorAll('.quiz-option').forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            // Aktifkan submit - CLICKABLE!
+            const submitBtn = document.getElementById('kirim-btn');
+            submitBtn.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'KIRIM & LANJUT';
+        }
+        
+        // ================= SUBMIT + VALIDASI =================
+        document.getElementById('kirim-btn').onclick = function() {
+            const indexUser = kuisStatus.jawabanUser[kuisStatus.soalAktifIndex];
+            const soalAktif = kuisStatus.soalArray[kuisStatus.soalAktifIndex];
+            
+            // Clean string comparison - ANTI ERROR!
+            const jawabanUserBersih = soalAktif.pilihan[indexUser].toString().trim().toLowerCase();
+            const jawabanBenarBersih = soalAktif.jawaban.toString().trim().toLowerCase();
+            
+            console.log('=== VALIDASI ===');
+            console.log('User:', `'${jawabanUserBersih}' (${indexUser})`);
+            console.log('Benar:', `'${jawabanBenarBersih}'`);
+            
+            const benar = jawabanUserBersih === jawabanBenarBersih;
+            console.log('Hasil:', benar ? '✅ BENAR' : '❌ SALAH');
+            
+            // Visual feedback
+            document.querySelectorAll('.quiz-option').forEach((btn, i) => {
+                btn.disabled = true;
+                
+                // Show correct answer
+                const btnText = soalAktif.pilihan[i].toString().trim().toLowerCase();
+                if (btnText === jawabanBenarBersih) {
+                    btn.classList.add('correct');
+                }
+                
+                // User choice
+                if (i === indexUser && !benar) {
+                    btn.classList.add('wrong');
+                }
+            });
+            
+            // Auto next
+            setTimeout(() => {
+                kuisStatus.soalAktifIndex++;
+                if (kuisStatus.soalAktifIndex < kuisStatus.totalSoal) {
+                    tampilkanSoalSaatIni();
+                } else {
+                    hitungHasilFinal();
+                }
+            }, 2000);
+        };
+        
+        // ================= FINAL SCORE =================
+        function hitungHasilFinal() {
+            console.log('🏁 HITUNG AKHIR');
+            
+            let totalBenar = 0;
+            kuisStatus.soalArray.forEach((soal, soalIndex) => {
+                const userIndex = kuisStatus.jawabanUser[soalIndex];
+                const userJawaban = soal.pilihan[userIndex]?.toString().trim().toLowerCase();
+                const kunciJawaban = soal.jawaban.toString().trim().toLowerCase();
+                
+                if (userJawaban === kunciJawaban) {
+                    totalBenar++;
+                }
+            });
+            
+            const persentase = Math.round((totalBenar / kuisStatus.totalSoal) * 100);
+            
+            // Hide/show lanjut stage button based on score >= 80%
+            document.getElementById('lanjut-dashboard').style.display = persentase >= 80 ? 'inline-block' : 'none';
+            
+            console.log(`Final Score: ${totalBenar}/${kuisStatus.totalSoal} = ${persentase}%`);
+            
+            // Show results
+            document.getElementById('quiz-active-zone').style.display = 'none';
+            document.getElementById('quiz-result-zone').style.display = 'block';
+            
+            document.getElementById('skor-akhir').textContent = 
+                `${totalBenar}/${kuisStatus.totalSoal} (${persentase}%)`;
+            
+            const ledEl = document.getElementById('final-led');
+            const judulHasil = document.getElementById('final-result-title');
+            
+            if (persentase >= 80) {
+                // LULUS!
+                ledEl.classList.add('led-success');
+                judulHasil.textContent = '🎉 LULUS UJIAN!';
+                document.getElementById('hasil-detail').innerHTML = `
+                    <strong>Excellent! Stage unlocked!</strong><br>
+                    XP +100 otomatis ditambahkan
+                `;
+                
+                // Update progress
+                const progressLama = parseInt(localStorage.getItem(STORAGE_KEY.PROGRESS) || 0);
+                const xpLama = parseInt(localStorage.getItem(STORAGE_KEY.XP) || 0);
+                localStorage.setItem(STORAGE_KEY.PROGRESS, progressLama + 1);
+                localStorage.setItem(STORAGE_KEY.XP, xpLama + 100);
+                
+            } else {
+                // GAGAL
+                ledEl.classList.add('led-fail');
+                judulHasil.textContent = '📚 BELAJAR LAGI!';
+                document.getElementById('hasil-detail').innerHTML = `
+                    <strong>Skor ${persentase}%</strong><br>
+                    Target minimal 80% untuk lulus
+                `;
+            }
+            
+            // Save score history
+            const historySkor = JSON.parse(localStorage.getItem(STORAGE_KEY.SCORES) || '{}');
+            historySkor[kuisStatus.stageId] = persentase;
+            localStorage.setItem(STORAGE_KEY.SCORES, JSON.stringify(historySkor));
+        }
+        
+        // ================= EVENT BINDING =================
+        document.getElementById('ulang-btn').onclick = function() {
+            kuisStatus.soalAktifIndex = 0;
+            kuisStatus.jawabanUser = [];
+            document.getElementById('quiz-result-zone').style.display = 'none';
+            document.getElementById('quiz-active-zone').style.display = 'block';
+            tampilkanSoalSaatIni();
+        };
+        
+        document.getElementById('lanjut-dashboard').onclick = function() {
+            window.location.href = 'index.html';
+        };
+        
+        function tampilkanErrorKuis(pesan) {
+            document.getElementById('quiz-active-zone').innerHTML = `
+                <div style="text-align:center; padding:4rem; color:var(--neon-pink);">
+                    <h2>❌ ERROR KUISIONER</h2>
+                    <p>${pesan}</p>
+                    <button onclick="location.reload()" class="kirim-lanjut" style="margin-top:2rem;">Coba Ulang</button>
+                </div>
+            `;
+        }
+        
+        function updateSkorHidup() {
+            const selesai = kuisStatus.soalAktifIndex;
+            const persenSelesai = Math.round((selesai / kuisStatus.totalSoal) * 100);
+            document.getElementById('real-time-score').textContent = `${persenSelesai}% selesai`;
+        }
+    </script>
+</body>
+</html>

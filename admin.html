@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - EL LEARN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Login Form -->
+        <div id="admin-login" class="admin-panel active">
+            <div class="panel-header">
+                <h1>🔐 Admin Login</h1>
+                <p>Masuk untuk mengelola EL LEARN</p>
+            </div>
+            <form id="admin-form">
+                <input type="password" id="admin-password" class="admin-input" placeholder="Password Admin" required>
+                <button type="submit" class="admin-btn">Login Admin</button>
+                <div class="admin-links">
+                    <a href="./index.html">← Kembali ke App</a>
+                </div>
+            </form>
+            <div id="debug-hash" style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; font-family: monospace; font-size: 0.8rem; word-break: break-all;"></div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard" class="admin-panel">
+            <div class="panel-header">
+                <h1>⚙️ Admin Panel - FULL MATERI + SOAL CRUD</h1>
+                <button id="admin-logout" class="admin-logout">Logout</button>
+            </div>
+
+            <!-- Stats -->
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <h3 id="user-count">0</h3>
+                    <p>Total Users</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="avg-progress">0%</h3>
+                    <p>Rata-rata Progress</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="top-xp">0 XP</h3>
+                    <p>Top XP Score</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="total-materi">0</h3>
+                    <p>Total Materi</p>
+                </div>
+            </div>
+
+            <!-- User Leaderboard -->
+            <div class="admin-section">
+                <h3>🏆 Leaderboard Teratas</h3>
+                <div id="leaderboard-list" class="leaderboard">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="admin-section">
+                <h3>⚡ Quick Actions</h3>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button id="load-materi" class="accent-btn">📥 Load from data.json</button>
+                    <button id="reset-materi" class="danger-btn">🗑️ Reset Materi</button>
+                    <button id="add-test-users" class="success-btn">➕ Test Users</button>
+                    <button id="reset-all-data" class="danger-btn">💥 Reset All Data</button>
+                </div>
+            </div>
+
+            <!-- Materi + Soal Management -->
+            <div class="admin-section">
+                <h3>📚 Materi & Soal Management</h3>
+                <button id="add-materi-btn" class="success-btn" style="margin-bottom: 1rem;">+ Tambah Materi Baru + Soal</button>
+                <div id="materi-list" class="materi-list"></div>
+            </div>
+
+            <!-- Reset Specific User -->
+            <div class="admin-section">
+                <h3>🔄 Reset User Progress</h3>
+                <input type="text" id="reset-user-input" placeholder="Username" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 1rem;">
+                <button id="reset-user-btn" class="warning-btn">Reset User</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple password (no hash issues)
+        const ADMIN_PASSWORD = 'faul110906';
+
+        const MATERI_KEY = 'MATERI_EL_LEARN';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const session = localStorage.getItem('admin-session');
+            if (!session) {
+                showLogin();
+                return;
+            }
+
+            const sessionData = JSON.parse(session);
+            if (Date.now() - sessionData.timestamp > 30 * 60 * 1000) {
+                localStorage.removeItem('admin-session');
+                window.location.href = './index.html';
+                return;
+            }
+
+            loadAdminDashboard();
+        });
+
+        function showLogin() {
+            document.getElementById('admin-login').classList.add('active');
+            document.getElementById('admin-dashboard').classList.remove('active');
+        }
+
+        async function loadAdminDashboard() {
+            document.getElementById('admin-login').classList.remove('active');
+            document.getElementById('admin-dashboard').classList.add('active');
+            
+            updateStats();
+            loadLeaderboard();
+            loadMateriList();
+        }
+
+        // Login - plain text with debug
+        document.getElementById('admin-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('admin-password').value;
+            const debugDiv = document.getElementById('debug-hash');
+            
+            debugDiv.textContent = `Entered: "${password}" | Expected: "${ADMIN_PASSWORD}" | Match: ${password === ADMIN_PASSWORD}`;
+            
+            if (password === ADMIN_PASSWORD) {
+                localStorage.setItem('admin-session', JSON.stringify({ timestamp: Date.now() }));
+                debugDiv.textContent = '✅ Login OK! Auto-sync materi live';
+                setTimeout(loadAdminDashboard, 500);
+            } else {
+                alert('❌ Password salah! Check debug.');
+                document.getElementById('admin-password').value = '';
+                document.getElementById('admin-password').focus();
+            }
+        });
+
+        document.getElementById('admin-logout').addEventListener('click', function() {
+            localStorage.removeItem('admin-session');
+            showLogin();
+        });
+
+        // Stats
+        function updateStats() {
+            const users = getAllUsers();
+            const data = JSON.parse(localStorage.getItem(MATERI_KEY) || '{}');
+            
+            document.getElementById('user-count').textContent = users.length;
+            document.getElementById('total-materi').textContent = data.materi?.length || 0;
+            // avg progress & top XP calculation...
+        }
+
+        function getAllUsers() {
+            const users = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key?.startsWith('username_')) {
+                    try {
+                        users.push(JSON.parse(localStorage.getItem(key)));
+                    } catch (e) {}
+                }
+            }
+            return users;
+        }
+
+        function loadLeaderboard() {
+            const users = getAllUsers().sort((a, b) => (parseInt(b.xp) || 0) - (parseInt(a.xp) || 0)).slice(0, 10);
+            document.getElementById('leaderboard-list').innerHTML = users.map((u, i) => `
+                <div class="leaderboard-item">
+                    <span>#${i+1}</span>
+                    <span>${u.username}</span>
+                    <span>${u.xp || 0} XP</span>
+                    <span>${Math.round((parseInt(u.progress) || 0) / 1.8 * 100)}%</span>
+                </div>
+            `).join('') || '<p>No users</p>';
+        }
+
+        // **FULL MATERI + SOAL CRUD**
+        async function loadMateriList() {
+            const dataStr = localStorage.getItem(MATERI_KEY) || JSON.stringify({materi: []});
+            console.log('Admin loading data:', dataStr);
+            const data = JSON.parse(dataStr);
+            
+            const list = document.getElementById('materi-list');
+            list.innerHTML = data.materi.map((m, i) => `
+                <div class="materi-item">
+                    <div class="materi-header">
+                        <span>[${m.jenjang} K${m.kelas} S${m.stage}] ${m.judul}</span>
+                        <div>
+                            <button onclick="editMateri(${i})" class="btn-small">✏️</button>
+                            <button onclick="editSoal(${i})" class="btn-small">📝 Soal</button>
+                            <button onclick="deleteMateri(${i})" class="danger-small">🗑️</button>
+                        </div>
+                    </div>
+                    <p>${m.isi_materi.substring(0, 100)}...</p>
+                    <small>Soal: ${m.soal?.length || 0}</small>
+                </div>
+            `).join('') || '<p>No materi. Add new!</p>';
+
+            updateStats();
+        }
+
+        // Tambah Materi + Soal Lengkap
+        document.getElementById('add-materi-btn').onclick = function() {
+            const newMateri = {
+                id: `sd-k${parseInt(prompt('Kelas:', '1'))}-s${parseInt(prompt('Stage:', '1'))}`,
+                jenjang: prompt('Jenjang:', 'SD'),
+                kelas: parseInt(prompt('Kelas:', '1')),
+                stage: parseInt(prompt('Stage:', '1')),
+                judul: prompt('Judul:', 'Materi Baru'),
+                isi_materi: prompt('Isi Materi:', 'Konten lengkap...'),
+                penjelasan_logika: prompt('Penjelasan Logika:', 'Logika lengkap...'),
+                hint_soal: prompt('Hint Soal:', 'Petunjuk...'),
+                bingung_dimana: prompt('Jika Bingung:', 'Penjelasan bingung...'),
+                soal: [
+                    {
+                        pertanyaan: prompt('Soal 1 Pertanyaan:', 'Contoh soal?'),
+                        pilihan: prompt('Pilihan (A|B|C|D):', 'A. 1|B. 2|C. 3|D. 4').split('|'),
+                        jawaban: prompt('Jawaban benar:', 'A'),
+                        pembahasan: prompt('Pembahasan:', 'Penjelasan lengkap...')
+                    },
+                    {
+                        pertanyaan: prompt('Soal 2 Pertanyaan:', 'Contoh soal kedua?'),
+                        pilihan: prompt('Pilihan 2 (A|B|C|D):', 'A. 1|B. 2|C. 3|D. 4').split('|'),
+                        jawaban: prompt('Jawaban benar 2:', 'B'),
+                        pembahasan: prompt('Pembahasan 2:', 'Penjelasan kedua...')
+                    }
+                ]
+            };
+
+            const data = JSON.parse(localStorage.getItem(MATERI_KEY) || '{}');
+            data.materi = data.materi || [];
+            data.materi.push(newMateri);
+            localStorage.setItem(MATERI_KEY, JSON.stringify(data));
+            
+            alert('✅ Materi + 2 Soal ditambahkan! Live sync ke app!');
+            loadMateriList();
+        };
+
+        // Edit Materi
+        window.editMateri = function(index) {
+            const data = JSON.parse(localStorage.getItem(MATERI_KEY) || '{}');
+            const m = data.materi[index];
+            
+            const judul = prompt('Judul:', m.judul);
+            const isi = prompt('Isi:', m.isi_materi);
+            
+            if (judul && isi) {
+                data.materi[index].judul = judul;
+                data.materi[index].isi_materi = isi;
+                localStorage.setItem(MATERI_KEY, JSON.stringify(data));
+                loadMateriList();
+                alert('✅ Materi updated - live sync!');
+            }
+        };
+
+        // Edit/Tambah Soal untuk materi tertentu
+        window.editSoal = function(index) {
+            const data = JSON.parse(localStorage.getItem(MATERI_KEY) || '{}');
+            const m = data.materi[index];
+            
+            let action = prompt('1=Tambah Soal | 2=Edit Soal | 0=Kembali', '1');
+            
+            if (action === '1') {
+                const newSoal = {
+                    pertanyaan: prompt('Pertanyaan:', 'Soal baru?'),
+                    pilihan: prompt('Pilihan A|B|C|D:', 'A.1|B.2|C.3|D.4').split('|'),
+                    jawaban: prompt('Jawaban benar:', 'A'),
+                    pembahasan: prompt('Pembahasan:', 'Penjelasan...')
+                };
+                m.soal.push(newSoal);
+            } else if (action === '2') {
+                const soalIdx = parseInt(prompt('Soal ke-berapa (0-index):', '0'));
+                if (m.soal[soalIdx]) {
+                    m.soal[soalIdx].pertanyaan = prompt('Pertanyaan:', m.soal[soalIdx].pertanyaan);
+                    m.soal[soalIdx].jawaban = prompt('Jawaban:', m.soal[soalIdx].jawaban);
+                    m.soal[soalIdx].pembahasan = prompt('Pembahasan:', m.soal[soalIdx].pembahasan);
+                }
+            }
+            
+            localStorage.setItem(MATERI_KEY, JSON.stringify(data));
+            loadMateriList();
+            alert('✅ Soal updated - langsung muncul di app!');
+        };
+
+        window.deleteMateri = function(index) {
+            if (confirm('Hapus materi + semua soalnya?')) {
+                const data = JSON.parse(localStorage.getItem(MATERI_KEY) || '{}');
+                data.materi.splice(index, 1);
+                localStorage.setItem(MATERI_KEY, JSON.stringify(data));
+                loadMateriList();
+            }
+        };
+
+        // Quick actions
+        // Robust loadFromDataJson with validation
+        window.loadFromDataJson = async function() {
+            const debugDiv = document.getElementById('debug-hash');
+            try {
+                const res = await fetch('./data.json');
+                if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                
+                const rawData = await res.text();
+                const data = JSON.parse(rawData);
+                
+                // Validate structure
+                if (!data || !Array.isArray(data.materi)) {
+                    throw new Error('Format salah: Harus { "materi": [...] }');
+                }
+                
+                const validMateri = data.materi.filter(m => {
+                    const hasRequired = m.id && m.judul && m.isi_materi && Array.isArray(m.soal);
+                    const soalValid = m.soal.every(s => s.pertanyaan && Array.isArray(s.pilihan) && s.jawaban);
+                    return hasRequired && soalValid;
+                });
+                
+                if (validMateri.length === 0) {
+                    throw new Error('Tidak ada materi valid. Periksa format soal.');
+                }
+                
+                const cleanData = {materi: validMateri};
+                localStorage.setItem(MATERI_KEY, JSON.stringify(cleanData));
+                
+                debugDiv.textContent = `✅ Loaded ${validMateri.length} materi valid from data.json`;
+                loadMateriList();
+                alert(`✅ SUCCESS! ${validMateri.length} materi valid loaded. Invalid di-skip.`);
+                
+            } catch (e) {
+                console.error('Load JSON error:', e);
+                debugDiv.textContent = `❌ ERROR: ${e.message}\nLine: ${e.line || 'unknown'}`;
+                alert(`ERROR Load JSON:\n${e.message}\n\nCheck debug di bawah & console F12`);
+            }
+        };
+
+        document.getElementById('load-materi').onclick = loadFromDataJson;
+
+        document.getElementById('reset-materi').onclick = () => {
+            if (confirm('Reset semua materi?')) {
+                localStorage.setItem(MATERI_KEY, JSON.stringify({materi: []}));
+                loadMateriList();
+            }
+        };
+
+        document.getElementById('add-test-users').onclick = () => {
+            for (let i = 1; i <= 10; i++) {
+                localStorage.setItem(`username_test${i}`, JSON.stringify({
+                    username: `Test${i}`,
+                    progress: (Math.random() * 180)|0,
+                    xp: (Math.random() * 1000)|0
+                }));
+            }
+            updateStats();
+            loadLeaderboard();
+            alert('✅ 10 test users added');
+        };
+
+        document.getElementById('reset-all-data').onclick = () => {
+            if (confirm('RESET SEMUA DATA USER?')) {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.startsWith('username_') || key === 'progress')) {
+                        localStorage.removeItem(key);
+                    }
+                }
+                updateStats();
+                loadLeaderboard();
+                alert('✅ All user data reset');
+            }
+        };
+
+        document.getElementById('reset-user-btn').onclick = () => {
+            const username = document.getElementById('reset-user-input').value.trim().toLowerCase();
+            const key = `username_${username}`;
+            if (localStorage.getItem(key)) {
+                localStorage.setItem(key, JSON.stringify({username, progress: '0', xp: '0'}));
+                updateStats();
+                alert(`✅ ${username} reset`);
+            } else {
+                alert('User not found');
+            }
+        };
+
+        // Auto refresh
+        setInterval(() => {
+            updateStats();
+            loadLeaderboard();
+        }, 5000);
+    </script>
+</body>
+</html>

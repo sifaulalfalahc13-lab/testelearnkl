@@ -1,0 +1,26 @@
+{
+  "name": "EL LEARN - Belajar Matematika",
+  "short_name": "EL LEARN",
+  "description": "Platform belajar matematika interaktif dengan ujian, review, dan progress tracking",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#10b981",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9Ijk2IiBjeT0iOTYiIHI9Ijk2IiBmaWxsPSIjZWZlZmZmIi8+CjxjaXJjbGUgY3g9Ijk2IiBjeT0iOTYiIHI9Ijc4IiBmaWxsPSJ1cmwoI3BhZGRpbmcKICJmcm9tIj0iMHB4IDkwZGVnIiwidG89IjoiMzMwcHggMTI1ZGVnIiwidGltZWZ1bmN0aW9uIj0iaW5zaW5lIiwiYXMiPSJmb3J3YXJkcyIsImR1cmF0aW9uIj0iMXMiLCJyZXB eatcy09MSIgLz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcidiI9IjEuMSIgdmlld0JveD0iMCAwIDUwMCA1MDAiPgo8ZGVmcz4KPHJhZGlhbEdyYWRpZW50IGlkPSJwYWRkaW5nIiBjeD0iMjUwIiBjeT0iMjUwIiByPSIxMjUiPgo8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMwYWFhZmYiLz4KPHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iIzFjNzU5ZCIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwZTQyN2YiLz4KPC9yYWRpYWxHcmFkaWVudD4KPC9kZWZzPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIyNTAiIHI9IjI1MCIgZmlsbD0idXJsKCNwYWRkaW5nKSIvPgo8L3N2Zz4K",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMjU2IiBmaWxsPSIjZWZlZmZmIi8+CjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMjA2IiBmaWxsPSJ1cmwoI3BhZGRpbmcKICJmcm9tIj0iMHB4IDkwZGVnIiwidG89Ij0iMzMwcHggMTI1ZGVnIiwidGltZWZ1bmN0aW9uIj0iaW5zaW5lIiwiYXMiPSJmb3J3YXJkcyIsImR1cmF0aW9uIj0iMXMiLCJyZXBlyYXRzPS0xIiAvPgogPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcidiI9IjEuMSIgdmlld0JveD0iMCAwIDUwMCA1MDAiPgo8ZGVmcz4KPHJhZGlhbEdyYWRpZW50IGlkPSJwYWRkaW5nIiBjeD0iMjUwIiBjeT0iMjUwIiByPSIxMjUiPgo8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMwYWFhZmYiLz4KPHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iIzFjNzU5ZCIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwZTQyN2YiLz4KPC9yYWRpYWxHcmFkaWVudD4KPC9kZWZzPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIyNTAiIHI9IjI1MCIgZmlsbD0idXJsKCNwYWRkaW5nKSIvPgo8L3N2Zz4K",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "lang": "id-ID",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "scope": "./"
+}
